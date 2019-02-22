@@ -9,12 +9,12 @@ const StravaStrategy = require('passport-strava').Strategy;
 var server = express();
 
 const host = process.env.HOST || '127.0.0.1'
-const port = process.env.PORT || '3000'
+const port = process.env.PORT || '8080'
 
 passport.use(new StravaStrategy({
     clientID: '20070',
     clientSecret: '30aa8be4649723167e242710ff20e270571761a8',
-    callbackURL: "http://localhost:3000/auth/strava/callback"
+    callbackURL: "http://localhost:8080/auth/strava/callback"
   },
   function (accessToken, refreshToken, profile, done) {
     let user = {
@@ -34,9 +34,15 @@ passport.use(new StravaStrategy({
 // For serving static files from public directory
 // server.use(express.static('public'));
 server.use(cookieParser());
-server.use(bodyParser());
+
+// Set up to parse requests.
+server.use(bodyParser.urlencoded({extended: true}));
+server.use(bodyParser.json());
+
 server.use(session({
-  secret: 'keyboard cat'
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true,
 }));
 server.use(passport.initialize());
 server.use(passport.session());
@@ -53,8 +59,8 @@ passport.deserializeUser(function (user, done) {
 server.get('/auth/strava', passport.authenticate('strava'));
 
 server.get('/auth/strava/callback', passport.authenticate('strava', {
-  failureRedirect: 'http://localhost:3000',
-  successRedirect: 'http://localhost:3000',
+  failureRedirect: 'http://localhost:8080',
+  successRedirect: 'http://localhost:8080',
   failureFlash: true
 }));
 
